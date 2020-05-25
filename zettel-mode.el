@@ -54,6 +54,28 @@
                          org-title)))))))
    (deft-find-all-files)))
 
+(defun zettel--get-refs (target-file)
+  (with-current-buffer (find-file-noselect target-file)
+    (mapcar
+     (lambda (file)
+       (cons file
+             (with-current-buffer (find-file-noselect file)
+               (car (plist-get
+                     (org-export-get-environment)
+                     :title)))))
+     (sort
+      (cl-intersection
+       (deft-find-all-files-no-prefix)
+       (delete-dups
+        (org-element-map (org-element-parse-buffer) 'link
+          (lambda (link)
+            (let ((path (org-element-property :path link))
+                  (type (org-element-property :type link)))
+              (when (equal type "file")
+                path)))))
+       :test #'equal)
+      #'string<))))
+
 (defcustom zettel-link-text-prefix "§ "
   "A prefix for titles of links between notes."
   :type 'string)
@@ -64,9 +86,14 @@
 
 (defvar zettel-backrefs-buffer "*zettel-backrefs*")
 
-(defun zettel--insert-backrefs (target-file depth &optional listed)
+(defun zettel--insert-refs-using (ref-fun target-file depth &optional listed)
+  "Insert the org-mode links found using `ref-fun' on
+`target-file' recursively until `zettel-backref-max-depth' is
+reached.  `depth' is used to track the current recursion level,
+initially 0.  `listed' holds the files already listed in a given
+subtree to avoid duplicates and cycles."
   (dolist (file-data
-           (cl-nset-difference (zettel--get-backrefs target-file)
+           (cl-nset-difference (funcall ref-fun target-file)
                                listed
                                :test (lambda (x y) (equal (car x) y))))
     (insert (make-string (* 2 depth)
@@ -77,9 +104,16 @@
       (org-insert-link nil link title))
     (insert "\n")
     (when (< depth zettel-backref-max-depth)
-      (zettel--insert-backrefs (car file-data)
-                               (1+ depth)
-                               (cons target-file listed)))))
+      (zettel--insert-refs-using ref-fun
+                                 (car file-data)
+                                 (1+ depth)
+                                 (cons target-file listed)))))
+
+(defun zettel--insert-backrefs (target-file)
+  (zettel--insert-refs-using #'zettel--get-backrefs target-file 0))
+
+(defun zettel--insert-refs (target-file)
+  (zettel--insert-refs-using #'zettel--get-refs target-file 0))
 
 (defun zettel-list-backrefs ()
   (interactive)
@@ -93,7 +127,9 @@
         (erase-buffer)
         (zettel-backrefs-mode)
         (insert "* Backrefs\n\n")
-        (zettel--insert-backrefs target-file 0)
+        (zettel--insert-backrefs target-file)
+        (insert "\n* References\n\n")
+        (zettel--insert-refs target-file)
         (goto-char (point-min))))))
 
 (defvar zettel--last-buffer nil
