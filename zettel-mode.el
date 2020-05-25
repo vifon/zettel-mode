@@ -47,10 +47,11 @@
            ;; and title.  `org-export-get-environment' cannot be
            ;; called in the lambda above as it doesn't operate in the
            ;; context of the whole file, that's why we do it here.
-           (list (cons file
-                       (car (plist-get
-                             (org-export-get-environment)
-                             :title))))))))
+           (let ((org-title (car (plist-get
+                                  (org-export-get-environment)
+                                  :title))))
+             (list (cons file
+                         org-title)))))))
    (deft-find-all-files)))
 
 (defcustom zettel-link-text-prefix "§ "
