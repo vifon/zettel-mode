@@ -34,20 +34,21 @@
   (mapcan
    (lambda (file)
      (with-current-buffer (find-file-noselect file)
-       (save-excursion
-         (goto-char (point-min))
-         (when (search-forward (concat
-                                "["
-                                "file:"
-                                (org-link-escape
-                                 (file-name-nondirectory target-file))
-                                "]")
-                               nil t)
-           (list
-            (cons file
-                  (car (plist-get
-                        (org-export-get-environment)
-                        :title))))))))
+       (let ((link (org-element-map (org-element-parse-buffer) 'link
+                     ;; Find the first link to target-file.
+                     (lambda (link)
+                       (equal target-file
+                              (org-element-property :path link)))
+                     nil t)))
+         (when link
+           ;; If this file links to the target-file, return its name
+           ;; and title.  `org-export-get-environment' cannot be
+           ;; called in the lambda above as it doesn't operate in the
+           ;; context of the whole file, that's why we do it here.
+           (list (cons file
+                       (car (plist-get
+                             (org-export-get-environment)
+                             :title))))))))
    (deft-find-all-files)))
 
 (defcustom zettel-link-text-prefix "§ "
@@ -58,7 +59,7 @@
 
 (defun zettel-list-backrefs ()
   (interactive)
-  (let* ((target-file (buffer-file-name))
+  (let* ((target-file (file-name-nondirectory (buffer-file-name)))
          (buffer (get-buffer-create zettel-backrefs-buffer)))
     (display-buffer-in-side-window buffer
                                    '((side . right)))
