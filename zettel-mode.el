@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defgroup zettel-mode nil
   "A mode for Zettelkasten-style note-taking."
   :group 'outlines)
@@ -55,7 +57,28 @@
   "A prefix for titles of links between notes."
   :type 'string)
 
+(defcustom zettel-backref-max-depth 0
+  "Maximum depth of the backreference search."
+  :type 'integer)
+
 (defvar zettel-backrefs-buffer "*zettel-backrefs*")
+
+(defun zettel--insert-backrefs (target-file depth &optional listed)
+  (dolist (file-data
+           (cl-nset-difference (zettel--get-backrefs target-file)
+                               listed
+                               :test (lambda (x y) (equal (car x) y))))
+    (insert (make-string (* 2 depth)
+                         ?\ )
+            "- ")
+    (let ((link (concat "file:" (car file-data)))
+          (title (file-name-base (cdr file-data))))
+      (org-insert-link nil link title))
+    (insert "\n")
+    (when (< depth zettel-backref-max-depth)
+      (zettel--insert-backrefs (car file-data)
+                               (1+ depth)
+                               (cons target-file listed)))))
 
 (defun zettel-list-backrefs ()
   (interactive)
@@ -69,12 +92,7 @@
         (erase-buffer)
         (zettel-backrefs-mode)
         (insert "* Backrefs\n\n")
-        (dolist (file-data (zettel--get-backrefs target-file))
-          (insert "- ")
-          (let ((link (concat "file:" (car file-data)))
-                (title (file-name-base (cdr file-data))))
-            (org-insert-link nil link title))
-          (insert "\n"))
+        (zettel--insert-backrefs target-file 0)
         (goto-char (point-min))))))
 
 (defvar zettel--last-buffer nil
@@ -143,7 +161,8 @@ other window."
 
 (define-derived-mode zettel-backrefs-mode org-mode "Zettel-backref"
   "A specialized mode for the zettel-mode backreferences list."
-  (setq-local org-return-follows-link t))
+  (setq-local org-return-follows-link t
+              org-cycle-include-plain-lists 'integrate))
 
 
 (provide 'zettel-mode)
