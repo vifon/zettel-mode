@@ -66,7 +66,7 @@
       (read-only-mode 1)
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (org-mode)
+        (zettel-backrefs-mode)
         (insert "* Backrefs\n\n")
         (dolist (file-data (zettel--get-backrefs target-file))
           (insert "- ")
@@ -132,6 +132,18 @@ other window."
   (add-hook 'post-command-hook #'zettel-update-hook nil t))
 
 (add-to-list 'auto-mode-alist '("/\\.deft/.*\\.org\\'" . zettel-mode))
+
+
+(defvar zettel-backrefs-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") #'org-next-link)
+    (define-key map (kbd "p") #'org-previous-link)
+    map))
+
+(define-derived-mode zettel-backrefs-mode org-mode "Zettel-backref"
+  "A specialized mode for the zettel-mode backreferences list."
+  (setq-local org-return-follows-link t))
+
 
 (provide 'zettel-mode)
 ;;; zettel-mode.el ends here
