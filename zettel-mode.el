@@ -52,7 +52,7 @@
                                   :title))))
              (list (cons file
                          org-title)))))))
-   (deft-find-all-files)))
+   (deft-find-all-files-no-prefix)))
 
 (defun zettel--get-refs (target-file)
   (with-current-buffer (find-file-noselect target-file)
