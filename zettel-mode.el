@@ -168,10 +168,12 @@ other window."
             (completing-read "Target: "
                              (deft-find-all-files-no-prefix))))))
   (let* ((abs-file-name (deft-absolute-filename file-name))
-         (title (concat zettel-link-text-prefix
-                        (file-name-sans-extension file-name)))
+         (title (file-name-sans-extension file-name))
          (link (concat "file:" abs-file-name)))
-    (org-insert-link nil link title)
+    (org-insert-link nil
+                     link
+                     (concat zettel-link-text-prefix
+                             title))
     (if (file-exists-p abs-file-name)
         (display-buffer (find-file-noselect abs-file-name))
       (find-file-other-window abs-file-name)
