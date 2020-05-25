@@ -22,7 +22,8 @@
 
 ;;; Commentary:
 
-;; 
+;; An Emacs mode for Zettelkasten-style note-taking.
+;; Heavily inspired by org-roam.
 
 ;;; Code:
 
