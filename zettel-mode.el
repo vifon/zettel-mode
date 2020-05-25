@@ -32,7 +32,17 @@
   "A mode for Zettelkasten-style note-taking."
   :group 'outlines)
 
+(defcustom zettel-link-text-prefix "§ "
+  "A prefix for titles of links between notes."
+  :type 'string)
+
+(defcustom zettel-backref-max-depth 0
+  "Maximum depth of the backreference search."
+  :type 'integer)
+
+
 (defun zettel--get-backrefs (target-file)
+  "Get the links to other deft-managed files referencing `target-file'."
   (mapcan
    (lambda (file)
      (with-current-buffer (find-file-noselect file)
@@ -55,6 +65,7 @@
    (deft-find-all-files-no-prefix)))
 
 (defun zettel--get-refs (target-file)
+  "Get the links to other deft-managed files referenced from `target-file'."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
      (lambda (file)
@@ -76,24 +87,14 @@
        :test #'equal)
       #'string<))))
 
-(defcustom zettel-link-text-prefix "§ "
-  "A prefix for titles of links between notes."
-  :type 'string)
-
-(defcustom zettel-backref-max-depth 0
-  "Maximum depth of the backreference search."
-  :type 'integer)
-
-(defvar zettel-backrefs-buffer "*zettel-backrefs*")
-
-(defun zettel--insert-refs-using (ref-fun target-file depth &optional listed)
-  "Insert the org-mode links found using `ref-fun' on
+(defun zettel--insert-refs-using (ref-function target-file depth &optional listed)
+  "Insert the org-mode links found using `ref-function' on
 `target-file' recursively until `zettel-backref-max-depth' is
 reached.  `depth' is used to track the current recursion level,
 initially 0.  `listed' holds the files already listed in a given
 subtree to avoid duplicates and cycles."
   (dolist (file-data
-           (cl-nset-difference (funcall ref-fun target-file)
+           (cl-nset-difference (funcall ref-function target-file)
                                listed
                                :test (lambda (x y) (equal (car x) y))))
     (insert (make-string (* 2 depth)
@@ -104,10 +105,11 @@ subtree to avoid duplicates and cycles."
       (org-insert-link nil link title))
     (insert "\n")
     (when (< depth zettel-backref-max-depth)
-      (zettel--insert-refs-using ref-fun
+      (zettel--insert-refs-using ref-function
                                  (car file-data)
                                  (1+ depth)
                                  (cons target-file listed)))))
+
 
 (defun zettel--insert-backrefs (target-file)
   (zettel--insert-refs-using #'zettel--get-backrefs target-file 0))
@@ -115,7 +117,11 @@ subtree to avoid duplicates and cycles."
 (defun zettel--insert-refs (target-file)
   (zettel--insert-refs-using #'zettel--get-refs target-file 0))
 
-(defun zettel-list-backrefs ()
+
+(defvar zettel-backrefs-buffer "*zettel-backrefs*")
+
+(defun zettel-sidebar ()
+  "Show or refresh the sidebar with the lists of references."
   (interactive)
   (let* ((target-file (file-name-nondirectory (buffer-file-name)))
          (buffer (get-buffer-create zettel-backrefs-buffer)))
@@ -140,8 +146,9 @@ Used to detect the change of buffer.")
 (defun zettel-update-hook ()
   (unless (and (eq zettel--last-buffer (current-buffer))
                (get-buffer-window zettel-backrefs-buffer))
-    (zettel-list-backrefs)
+    (zettel-sidebar)
     (setq zettel--last-buffer (current-buffer))))
+
 
 (defun zettel-insert-note (file-name)
   "Insert a link to another org file, possibly creating a new file.
@@ -178,13 +185,17 @@ other window."
       (call-interactively #'zettel-insert-note)
     (call-interactively #'org-insert-link)))
 
+
 (defvar zettel-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [remap org-insert-link] #'zettel-insert-link)
     map))
 
 (define-derived-mode zettel-mode org-mode "Zettel"
-  "A mode for Zettelkasten-style note-taking."
+  "A mode for Zettelkasten-style note-taking based on `org-mode'.
+
+Provides a quicker to use version of `org-insert-link' and
+a sidebar outlining the file's relationship with other files."
   (add-hook 'post-command-hook #'zettel-update-hook nil t))
 
 (add-to-list 'auto-mode-alist '("/\\.deft/.*\\.org\\'" . zettel-mode))
@@ -197,7 +208,7 @@ other window."
     map))
 
 (define-derived-mode zettel-backrefs-mode org-mode "Zettel-backref"
-  "A specialized mode for the zettel-mode backreferences list."
+  "A specialized mode for the `zettel-mode' backreferences list."
   (setq-local org-return-follows-link t
               org-cycle-include-plain-lists 'integrate))
 
