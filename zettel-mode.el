@@ -198,7 +198,9 @@ other window."
       (find-file-other-window file-name)
       (with-current-buffer (get-file-buffer file-name)
         (insert "#+TITLE: " title "\n\n")
-        (goto-char (point-max))))))
+        (goto-char (point-max)))
+      (deft-cache-update-file file-name)
+      (deft-refresh-filter))))
 
 (defun zettel-insert-link ()
   "Call `zettel-insert-note' if region is active, otherwise call `org-insert-link'."
