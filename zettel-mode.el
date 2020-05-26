@@ -151,7 +151,7 @@ Used to detect the change of buffer.")
     (setq zettel--last-buffer (current-buffer))))
 
 
-(defun zettel-insert-note (file-name)
+(defun zettel-insert-note (name)
   "Insert a link to another org file, possibly creating a new file.
 
 If the region is active, use the selected text.
@@ -167,8 +167,16 @@ other window."
            (file-name-sans-extension
             (completing-read "Target: "
                              (deft-find-all-files-no-prefix))))))
-  (let* ((abs-file-name (deft-absolute-filename file-name))
-         (title (file-name-sans-extension file-name))
+  (let* ((file-name (if (region-active-p)
+                        (completing-read "File name: "
+                                         (deft-find-all-files-no-prefix)
+                                         nil nil
+                                         file-name)
+                      file-name))
+         (abs-file-name (deft-absolute-filename
+                          (concat (format-time-string "%Y%m%d%H%M_")
+                                  file-name)))
+         (title (file-name-sans-extension name))
          (link (concat "file:" abs-file-name)))
     (org-insert-link nil
                      link
