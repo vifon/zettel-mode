@@ -1,7 +1,7 @@
 zettel-mode [name subject to change]
 ====================================
 
-An Emacs mode for [Zettelkasten][1]-style note-taking.
+An opinionated Emacs mode for [Zettelkasten][1]-style note-taking.
 Heavily inspired by [org-roam][2], striving to be simpler, less
 dependent on the external state (like the auxiliary database of
 `org-roam`) and local only to the affected files (i.e. no global minor
