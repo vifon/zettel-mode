@@ -171,8 +171,8 @@ other window."
                         (completing-read "File name: "
                                          (deft-find-all-files-no-prefix)
                                          nil nil
-                                         file-name)
-                      file-name))
+                                         name)
+                      name))
          (abs-file-name (deft-absolute-filename
                           (concat (format-time-string "%Y%m%d%H%M_")
                                   file-name)))
