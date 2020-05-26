@@ -220,6 +220,10 @@ a sidebar outlining the file's relationship with other files."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "n") #'org-next-link)
     (define-key map (kbd "p") #'org-previous-link)
+    (define-key map (kbd "g") (lambda (arg)
+                                (interactive "P")
+                                (with-current-buffer zettel--last-buffer
+                                  (zettel-sidebar arg))))
     map))
 
 (define-derived-mode zettel-backrefs-mode org-mode "Zettel-backref"
