@@ -121,10 +121,14 @@ subtree to avoid duplicates and cycles."
 
 (defvar zettel-backrefs-buffer "*zettel-backrefs*")
 
-(defun zettel-sidebar ()
-  "Show or refresh the sidebar with the lists of references."
-  (interactive)
-  (let* ((target-file (file-name-nondirectory (buffer-file-name)))
+(defun zettel-sidebar (&optional depth)
+  "Show or refresh the sidebar with the lists of references.
+
+`depth' overrides `zettel-backref-max-depth' temporarily."
+  (interactive "P")
+  (let* ((zettel-backref-max-depth (or depth
+                                       zettel-backref-max-depth))
+         (target-file (file-name-nondirectory (buffer-file-name)))
          (buffer (get-buffer-create zettel-backrefs-buffer)))
     (display-buffer-in-side-window buffer
                                    '((side . right)))
