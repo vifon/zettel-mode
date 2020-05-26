@@ -37,8 +37,8 @@
   "A prefix for titles of links between notes."
   :type 'string)
 
-(defcustom zettel-backref-max-depth 0
-  "Maximum depth of the backreference search."
+(defcustom zettel-sidebar-max-depth 0
+  "Maximum depth of the references lists in the sidebar."
   :type 'integer)
 
 
@@ -90,7 +90,7 @@
 
 (defun zettel--insert-refs-using (ref-function target-file depth &optional listed)
   "Insert the org-mode links found using `ref-function' on
-`target-file' recursively until `zettel-backref-max-depth' is
+`target-file' recursively until `zettel-sidebar-max-depth' is
 reached.  `depth' is used to track the current recursion level,
 initially 0.  `listed' holds the files already listed in a given
 subtree to avoid duplicates and cycles."
@@ -105,7 +105,7 @@ subtree to avoid duplicates and cycles."
           (title (file-name-base (cdr file-data))))
       (org-insert-link nil link title))
     (insert "\n")
-    (when (< depth zettel-backref-max-depth)
+    (when (< depth zettel-sidebar-max-depth)
       (zettel--insert-refs-using ref-function
                                  (car file-data)
                                  (1+ depth)
@@ -119,24 +119,24 @@ subtree to avoid duplicates and cycles."
   (zettel--insert-refs-using #'zettel--get-refs target-file 0))
 
 
-(defvar zettel-backrefs-buffer "*zettel-backrefs*")
+(defvar zettel-sidebar-buffer "*zettel-sidebar*")
 
 (defun zettel-sidebar (&optional depth)
   "Show or refresh the sidebar with the lists of references.
 
-`depth' overrides `zettel-backref-max-depth' temporarily."
+`depth' overrides `zettel-sidebar-max-depth' temporarily."
   (interactive "P")
-  (let* ((zettel-backref-max-depth (or depth
-                                       zettel-backref-max-depth))
+  (let* ((zettel-sidebar-max-depth (or depth
+                                       zettel-sidebar-max-depth))
          (target-file (file-name-nondirectory (buffer-file-name)))
-         (buffer (get-buffer-create zettel-backrefs-buffer)))
+         (buffer (get-buffer-create zettel-sidebar-buffer)))
     (display-buffer-in-side-window buffer
                                    '((side . right)))
     (with-current-buffer buffer
       (read-only-mode 1)
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (zettel-backrefs-mode)
+        (zettel-sidebar-mode)
         (insert "* Backrefs\n\n")
         (zettel--insert-backrefs target-file)
         (insert "\n* References\n\n")
@@ -144,13 +144,13 @@ subtree to avoid duplicates and cycles."
         (goto-char (point-min))))))
 
 (defvar zettel--last-buffer nil
-  "The last buffer that got its backrefs listed.
+  "The last buffer the sidebar was generated for.
 
 Used to detect the change of buffer.")
 
 (defun zettel-update-hook ()
   (unless (and (eq zettel--last-buffer (current-buffer))
-               (get-buffer-window zettel-backrefs-buffer))
+               (get-buffer-window zettel-sidebar-buffer))
     (zettel-sidebar)
     (setq zettel--last-buffer (current-buffer))))
 
@@ -225,7 +225,7 @@ a sidebar outlining the file's relationship with other files."
 (add-to-list 'auto-mode-alist '("/\\.deft/.*\\.org\\'" . zettel-mode))
 
 
-(defvar zettel-backrefs-mode-map
+(defvar zettel-sidebar-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "n") #'org-next-link)
     (define-key map (kbd "p") #'org-previous-link)
@@ -235,8 +235,8 @@ a sidebar outlining the file's relationship with other files."
                                   (zettel-sidebar arg))))
     map))
 
-(define-derived-mode zettel-backrefs-mode org-mode "Zettel-backref"
-  "A specialized mode for the `zettel-mode' backreferences list."
+(define-derived-mode zettel-sidebar-mode org-mode "Zettel-sidebar"
+  "A specialized mode for the `zettel-mode' sidebar with lists of references."
   (setq-local org-return-follows-link t
               org-cycle-include-plain-lists 'integrate))
 
