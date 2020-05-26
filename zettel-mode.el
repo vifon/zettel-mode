@@ -194,8 +194,7 @@ other window."
                      link
                      (concat zettel-link-text-prefix
                              title))
-    (if (file-exists-p file-name)
-        (display-buffer (find-file-noselect file-name))
+    (unless (file-exists-p file-name)
       (find-file-other-window file-name)
       (with-current-buffer (get-file-buffer file-name)
         (insert "#+TITLE: " title "\n\n")
