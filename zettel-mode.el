@@ -158,6 +158,11 @@ Used to detect the change of buffer.")
     (setq zettel--last-buffer (current-buffer))))
 
 
+(defun zettel--unique-name (name)
+  "Add a unique ID to `name'."
+  (concat (format-time-string "%Y%m%d%H%M%S_")
+          name))
+
 (defun zettel-insert-note (name file-name)
   "Insert a link to another org file, possibly creating a new file.
 
@@ -187,10 +192,10 @@ other window."
   (let* ((file-name (if (file-exists-p file-name)
                         file-name
                       (deft-absolute-filename
-                        (concat (format-time-string "%Y%m%d%H%M_")
-                                (file-name-nondirectory
-                                 (file-name-sans-extension
-                                  file-name))))))
+                        (zettel--unique-name
+                         (file-name-nondirectory
+                          (file-name-sans-extension
+                           file-name))))))
          (title name)
          (link (concat "file:" file-name)))
     (org-insert-link nil
