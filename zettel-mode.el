@@ -222,6 +222,8 @@ other window."
 (defvar zettel-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [remap org-insert-link] #'zettel-insert-link)
+    (define-key map (kbd "M-n") #'org-next-link)
+    (define-key map (kbd "M-p") #'org-previous-link)
     map))
 
 (define-derived-mode zettel-mode org-mode "Zettel"
