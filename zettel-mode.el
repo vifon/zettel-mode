@@ -28,6 +28,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'deft)
 
 (defgroup zettel-mode nil
   "A mode for Zettelkasten-style note-taking."
