@@ -164,7 +164,7 @@ Used to detect the change of buffer.")
   (concat (format-time-string "%Y%m%d%H%M%S_")
           name))
 
-(defun zettel-insert-note (name file-name)
+(defun zettel-insert-note (text title file-name)
   "Insert a link to another org file, possibly creating a new file.
 
 If the region is active, use the selected text.
@@ -175,21 +175,21 @@ it in a new window.  Otherwise just display it in the
 other window."
   (interactive
    (if (region-active-p)
-       (let* ((name (buffer-substring-no-properties
+       (let* ((text (buffer-substring-no-properties
                      (point) (mark)))
-              (file-name (deft-absolute-filename
-                           (file-name-sans-extension
-                            (completing-read "File name: "
-                                             (deft-find-all-files-no-prefix)
-                                             nil nil
-                                             (downcase name))))))
-         (list name file-name))
-     (let ((file-name (deft-absolute-filename
-                        (file-name-sans-extension
-                         (completing-read "Target: "
-                                          (deft-find-all-files-no-prefix)))))
-           (name (read-from-minibuffer "Description: ")))
-       (list name file-name))))
+              (title (file-name-sans-extension
+                      (completing-read "File title: "
+                                       (deft-find-all-files-no-prefix)
+                                       nil nil
+                                       (downcase text))))
+              (file-name (deft-absolute-filename title)))
+         (list text title file-name))
+     (let* ((title (file-name-sans-extension
+                    (completing-read "File title: "
+                                     (deft-find-all-files-no-prefix))))
+            (file-name (deft-absolute-filename title))
+            (text (read-from-minibuffer "Description: ")))
+       (list text title file-name))))
   (let* ((file-name (if (file-exists-p file-name)
                         file-name
                       (deft-absolute-filename
@@ -197,12 +197,11 @@ other window."
                          (file-name-nondirectory
                           (file-name-sans-extension
                            file-name))))))
-         (title name)
          (link (concat "file:" file-name)))
     (org-insert-link nil
                      link
                      (concat zettel-link-text-prefix
-                             title))
+                             text))
     (unless (file-exists-p file-name)
       (find-file-other-window file-name)
       (with-current-buffer (get-file-buffer file-name)
