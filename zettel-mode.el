@@ -34,7 +34,7 @@
   "A mode for Zettelkasten-style note-taking."
   :group 'outlines)
 
-(defcustom zettel-link-text-prefix "§ "
+(defcustom zettel-link-text-prefix "§ "
   "A prefix for titles of links between notes."
   :type 'string)
 
