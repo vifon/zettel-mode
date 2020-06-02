@@ -208,7 +208,8 @@ other window."
         (insert "#+TITLE: " title "\n\n")
         (goto-char (point-max)))
       (deft-cache-update-file file-name)
-      (deft-refresh-filter))))
+      (deft-refresh-filter))
+    (zettel-sidebar)))
 
 (defun zettel-insert-link ()
   "Call `zettel-insert-note' if region is active, otherwise call `org-insert-link'."
