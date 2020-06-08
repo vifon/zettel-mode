@@ -181,7 +181,7 @@ other window."
                       (completing-read "File title: "
                                        (deft-find-all-files-no-prefix)
                                        nil nil
-                                       (downcase text))))
+                                       text)))
               (file-name (deft-absolute-filename title)))
          (list text title file-name))
      (let* ((title (file-name-sans-extension
