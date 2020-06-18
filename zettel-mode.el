@@ -211,12 +211,16 @@ other window."
       (deft-refresh-filter))
     (zettel-sidebar)))
 
-(defun zettel-insert-link ()
-  "Call `zettel-insert-note' if region is active, otherwise call `org-insert-link'."
-  (interactive)
-  (if (region-active-p)
+(defun zettel-insert-link (&optional arg)
+  "Call `zettel-insert-note' if region is active, otherwise call `org-insert-link'.
+
+With a prefix ARG always call `org-insert-link'"
+  (interactive "P")
+  (if (and (region-active-p)
+           (not arg))
       (call-interactively #'zettel-insert-note)
-    (call-interactively #'org-insert-link)))
+    (let ((current-prefix-arg nil))
+      (call-interactively #'org-insert-link))))
 
 
 (defvar zettel-mode-map
