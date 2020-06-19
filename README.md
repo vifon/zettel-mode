@@ -24,6 +24,14 @@ For the settings see the provided [Customize][4] menus.
 
 [4]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Easy-Customization.html
 
+FAQ
+---
+
+Q: Why it's not on MELPA?
+
+A: I don't want to hoard such a generic name as `zettel-mode` and for
+now I don't have a better name for it either.
+
 COPYRIGHT
 ---------
 
