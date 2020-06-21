@@ -92,6 +92,37 @@
        :test #'equal)
       #'string<))))
 
+(defun zettel--get-external-refs (target-file)
+  "Get the links referenced from `target-file' other than to the
+ones to the other deft-managed files."
+  (with-current-buffer (find-file-noselect target-file)
+    (mapcar
+     (lambda (link)
+       (cons (plist-get link :raw)
+             (plist-get link :text)))
+     (sort
+      (cl-set-difference
+       (delete-dups
+        (org-element-map (org-element-parse-buffer) 'link
+          (lambda (link)
+            (let ((path (org-element-property :path link))
+                  (type (org-element-property :type link))
+                  (raw (org-element-property :raw-link link))
+                  (text (org-element-contents link)))
+              (list :raw raw
+                    :text (if text
+                              (substring-no-properties
+                               (car text))
+                            raw)
+                    :path (when (equal type "file")
+                            path))))))
+       (deft-find-all-files-no-prefix)
+       :test (lambda (a b) (equal (plist-get a :path)
+                                  b)))
+      (lambda (a b)
+        (string< (plist-get a :text)
+                 (plist-get b :text)))))))
+
 (defun zettel--insert-refs-using (ref-function target-file depth &optional listed)
   "Insert the org-mode links found using `ref-function' on
 `target-file' recursively until `zettel-sidebar-max-depth' is
@@ -122,6 +153,16 @@ subtree to avoid duplicates and cycles."
 (defun zettel--insert-refs (target-file)
   (zettel--insert-refs-using #'zettel--get-refs target-file 0))
 
+(defun zettel--insert-external-refs (target-file)
+  (when-let ((links (zettel--get-external-refs target-file)))
+    (insert "\n* External\n\n")
+    (dolist (link (zettel--get-external-refs target-file))
+      (insert "- ")
+      (let ((link (car link))
+            (title (cdr link)))
+        (org-insert-link nil link title))
+      (insert "\n"))))
+
 
 (defvar zettel-sidebar-buffer "*zettel-sidebar*")
 
@@ -145,6 +186,7 @@ subtree to avoid duplicates and cycles."
         (zettel--insert-backrefs target-file)
         (insert "\n* References\n\n")
         (zettel--insert-refs target-file)
+        (zettel--insert-external-refs target-file)
         (goto-char (point-min))))))
 
 (defvar zettel--last-buffer nil
