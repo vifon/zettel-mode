@@ -93,7 +93,7 @@
       #'string<))))
 
 (defun zettel--get-external-refs (target-file)
-  "Get the links referenced from `target-file' other than to the
+  "Get the links referenced from `target-file' other than the
 ones to the other deft-managed files."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
@@ -148,9 +148,11 @@ subtree to avoid duplicates and cycles."
 
 
 (defun zettel--insert-backrefs (target-file)
+  (insert "* Backrefs\n\n")
   (zettel--insert-refs-using #'zettel--get-backrefs target-file 0))
 
 (defun zettel--insert-refs (target-file)
+  (insert "\n* References\n\n")
   (zettel--insert-refs-using #'zettel--get-refs target-file 0))
 
 (defun zettel--insert-external-refs (target-file)
@@ -182,9 +184,7 @@ subtree to avoid duplicates and cycles."
       (let ((inhibit-read-only t))
         (erase-buffer)
         (zettel-sidebar-mode)
-        (insert "* Backrefs\n\n")
         (zettel--insert-backrefs target-file)
-        (insert "\n* References\n\n")
         (zettel--insert-refs target-file)
         (zettel--insert-external-refs target-file)
         (goto-char (point-min))))))
