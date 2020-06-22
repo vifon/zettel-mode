@@ -44,7 +44,7 @@
 
 
 (defun zettel--get-backrefs (target-file)
-  "Get the links to other deft-managed files referencing `target-file'."
+  "Get the links to other deft-managed files referencing TARGET-FILE."
   (sort
    (mapcan
     (lambda (file)
@@ -70,7 +70,7 @@
                           (car y)))))
 
 (defun zettel--get-refs (target-file)
-  "Get the links to other deft-managed files referenced from `target-file'."
+  "Get the links to other deft-managed files referenced from TARGET-FILE."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
      (lambda (file)
@@ -93,8 +93,10 @@
       #'string<))))
 
 (defun zettel--get-external-refs (target-file)
-  "Get the links referenced from `target-file' other than the
-ones to the other deft-managed files."
+  "Get the external links referenced from TARGET-FILE.
+
+Return all the links other than the ones to the other
+deft-managed files."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
      (lambda (link)
@@ -124,10 +126,12 @@ ones to the other deft-managed files."
                  (plist-get b :text)))))))
 
 (defun zettel--insert-refs-using (ref-function target-file depth &optional listed)
-  "Insert the org-mode links found using `ref-function' on
-`target-file' recursively until `zettel-sidebar-max-depth' is
-reached.  `depth' is used to track the current recursion level,
-initially 0.  `listed' holds the files already listed in a given
+  "Insert a sidebar section.
+
+Insert the `org-mode' links found using REF-FUNCTION on
+TARGET-FILE recursively until `zettel-sidebar-max-depth' is
+reached.  DEPTH is used to track the current recursion level,
+initially 0.  LISTED holds the files already listed in a given
 subtree to avoid duplicates and cycles."
   (dolist (file-data
            (cl-nset-difference (funcall ref-function target-file)
@@ -171,7 +175,7 @@ subtree to avoid duplicates and cycles."
 (defun zettel-sidebar (&optional depth)
   "Show or refresh the sidebar with the lists of references.
 
-`depth' overrides `zettel-sidebar-max-depth' temporarily."
+DEPTH overrides `zettel-sidebar-max-depth' temporarily."
   (interactive "P")
   (let* ((zettel-sidebar-max-depth (or depth
                                        zettel-sidebar-max-depth))
@@ -202,19 +206,21 @@ Used to detect the change of buffer.")
 
 
 (defun zettel--unique-name (name)
-  "Add a unique ID to `name'."
+  "Add a unique ID to NAME."
   (concat (format-time-string "%Y%m%d%H%M%S_")
           name))
 
 (defun zettel-insert-note (text title file-name)
   "Insert a link to another org file, possibly creating a new file.
 
-If the region is active, use the selected text.
-Otherwise interactively ask for a file to link to.
+If FILE-NAME doesn't exist, create it and use TITLE as its
+title (\"#+TITLE\").  Afterwards the file is displayed in the
+other window.  Regardless of the file's previous existence a link
+to FILE-NAME with TEXT as its description is left at the
+original point.
 
-If the file doesn't exist, create it, add a title to it and focus
-it in a new window.  Otherwise just display it in the
-other window."
+In interactive uses, if the region is active, use the selected
+text.  Otherwise interactively ask for a file to link to."
   (interactive
    (if (region-active-p)
        (let* ((text (buffer-substring-no-properties
