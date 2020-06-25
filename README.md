@@ -7,12 +7,24 @@ dependent on the external state (like the auxiliary database of
 `org-roam`) and local only to the affected files (i.e. no global minor
 modes).
 
-Uses [Deft][3] as its "entry point" and assumes the `Deft` files
-reside in `~/.deft/`.
+ASSUMPTIONS
+-----------
+
+Uses [Deft][3] as its "entry point" and was developed under an
+assumption the `Deft` files reside in `~/.deft/`.  It should work with
+any `deft-directory` with the final directory named `.deft` but it
+wasn't tested.  In other cases, you'll need to customize
+`auto-mode-alist` accordingly.  Using subdirectories wasn't tested.
 
 [1]: https://zettelkasten.de/
 [2]: https://github.com/org-roam/org-roam
 [3]: https://github.com/jrblevin/deft
+
+Recommended `Deft` settings:
+
+```elisp
+(setq deft-default-extension "org")
+```
 
 FEATURES
 --------
