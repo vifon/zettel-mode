@@ -36,6 +36,15 @@ For the settings see the provided [Customize][4] menus.
 
 [4]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Easy-Customization.html
 
+SCRIPTS
+-------
+
+In the `scripts/` directory reside some helper scripts for common
+maintenance tasks for the notes.  In general they work but they
+probably don't handle all the corner cases (like filenames with
+special characters).  Each script has a brief description included as
+a comment.
+
 FAQ
 ---
 
