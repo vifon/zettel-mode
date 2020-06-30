@@ -72,14 +72,14 @@
 (defun zettel--get-refs (target-file)
   "Get the links to other deft-managed files referenced from TARGET-FILE."
   (with-current-buffer (find-file-noselect target-file)
-    (mapcar
-     (lambda (file)
-       (cons file
-             (with-current-buffer (find-file-noselect file)
-               (car (plist-get
-                     (org-export-get-environment)
-                     :title)))))
-     (sort
+    (sort
+     (mapcar
+      (lambda (file)
+        (cons file
+              (with-current-buffer (find-file-noselect file)
+                (car (plist-get
+                      (org-export-get-environment)
+                      :title)))))
       (cl-intersection
        (deft-find-all-files-no-prefix)
        (delete-dups
@@ -89,8 +89,9 @@
                   (type (org-element-property :type link)))
               (when (equal type "file")
                 path)))))
-       :test #'equal)
-      #'string<))))
+       :test #'equal))
+     (lambda (x y) (string< (cdr x)
+                            (cdr y))))))
 
 (defun zettel--get-external-refs (target-file)
   "Get the external links referenced from TARGET-FILE.
