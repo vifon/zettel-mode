@@ -301,8 +301,8 @@ a sidebar outlining the file's relationship with other files."
 
 (define-derived-mode zettel-sidebar-mode org-mode "Zettel-sidebar"
   "A specialized mode for the `zettel-mode' sidebar with lists of references."
-  (setq-local org-return-follows-link t
-              org-cycle-include-plain-lists 'integrate))
+  (setq-local org-return-follows-link t)
+  (setq-local org-cycle-include-plain-lists 'integrate))
 
 
 (provide 'zettel-mode)
