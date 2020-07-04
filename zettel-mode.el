@@ -29,6 +29,8 @@
 
 (require 'cl-lib)
 (require 'deft)
+(require 'subr-x)
+(require 'org)
 
 (defgroup zettel-mode nil
   "A mode for Zettelkasten-style note-taking."
