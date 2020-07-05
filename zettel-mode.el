@@ -279,6 +279,7 @@ With a prefix ARG always call `org-insert-link'"
     (define-key map [remap org-insert-link] #'zettel-insert-link)
     (define-key map (kbd "M-n") #'org-next-link)
     (define-key map (kbd "M-p") #'org-previous-link)
+    (define-key map (kbd "C-c C-g") #'zettel-sidebar)
     map))
 
 (define-derived-mode zettel-mode org-mode "Zettel"
