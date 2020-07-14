@@ -62,9 +62,10 @@
             ;; and title.  `org-export-get-environment' cannot be
             ;; called in the lambda above as it doesn't operate in the
             ;; context of the whole file, that's why we do it here.
-            (let ((org-title (car (plist-get
-                                   (org-export-get-environment)
-                                   :title))))
+            (let ((org-title (substring-no-properties
+                              (car (plist-get
+                                    (org-export-get-environment)
+                                    :title)))))
               (list (list file
                           org-title)))))))
     (deft-find-all-files-no-prefix))
@@ -79,9 +80,10 @@
       (lambda (file)
         (list file
               (with-current-buffer (find-file-noselect file)
-                (car (plist-get
-                      (org-export-get-environment)
-                      :title)))))
+                (substring-no-properties
+                 (car (plist-get
+                       (org-export-get-environment)
+                       :title))))))
       (cl-intersection
        (deft-find-all-files-no-prefix)
        (delete-dups
