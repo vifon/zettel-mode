@@ -65,7 +65,7 @@
             (let ((org-title (car (plist-get
                                    (org-export-get-environment)
                                    :title))))
-              (list (cons file
+              (list (list file
                           org-title)))))))
     (deft-find-all-files-no-prefix))
    (lambda (x y) (string< (car x)
@@ -77,7 +77,7 @@
     (sort
      (mapcar
       (lambda (file)
-        (cons file
+        (list file
               (with-current-buffer (find-file-noselect file)
                 (car (plist-get
                       (org-export-get-environment)
@@ -92,8 +92,8 @@
               (when (equal type "file")
                 path)))))
        :test #'equal))
-     (lambda (x y) (string< (cdr x)
-                            (cdr y))))))
+     (lambda (x y) (string< (cadr x)
+                            (cadr y))))))
 
 (defun zettel--get-external-refs (target-file)
   "Get the external links referenced from TARGET-FILE.
@@ -103,7 +103,7 @@ deft-managed files."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
      (lambda (link)
-       (cons (plist-get link :raw)
+       (list (plist-get link :raw)
              (plist-get link :text)))
      (sort
       (cl-set-difference
@@ -144,7 +144,7 @@ subtree to avoid duplicates and cycles."
                          ?\ )
             "- ")
     (let ((link (concat "file:" (car file-data)))
-          (title (file-name-base (cdr file-data))))
+          (title (file-name-base (cadr file-data))))
       (org-insert-link nil link title))
     (insert "\n")
     (when (< depth zettel-sidebar-max-depth)
@@ -168,7 +168,7 @@ subtree to avoid duplicates and cycles."
     (dolist (link (zettel--get-external-refs target-file))
       (insert "- ")
       (let ((link (car link))
-            (title (cdr link)))
+            (title (cadr link)))
         (org-insert-link nil link title))
       (insert "\n"))))
 
