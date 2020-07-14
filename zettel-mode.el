@@ -165,7 +165,7 @@ subtree to avoid duplicates and cycles."
 (defun zettel--insert-external-refs (target-file)
   (when-let ((links (zettel--get-external-refs target-file)))
     (insert "\n* External\n\n")
-    (dolist (link (zettel--get-external-refs target-file))
+    (dolist (link links)
       (insert "- ")
       (let ((link (car link))
             (title (cadr link)))
