@@ -51,24 +51,24 @@
    (mapcan
     (lambda (file)
       (with-current-buffer (find-file-noselect file)
-        (let ((link (org-element-map (org-element-parse-buffer) 'link
-                      ;; Find the first link to target-file.
-                      (lambda (link)
-                        (equal target-file
-                               (org-element-property :path link)))
-                      nil t)))
-          (when link
-            ;; If this file links to the target-file, return its name
-            ;; and title.  `org-export-get-environment' cannot be
-            ;; called in the lambda above as `org-element-map' doesn't
-            ;; operate in the context of the whole file, that's why we
-            ;; do it here.
-            (let ((org-title (substring-no-properties
-                              (car (plist-get
-                                    (org-export-get-environment)
-                                    :title)))))
-              (list (list file
-                          org-title)))))))
+        (when-let ((link (org-element-map
+                          (org-element-parse-buffer) 'link
+                          ;; Find the first link to target-file.
+                          (lambda (link)
+                            (equal target-file
+                                   (org-element-property :path link)))
+                          nil t)))
+          ;; If this file links to the target-file, return its name
+          ;; and title.  `org-export-get-environment' cannot be
+          ;; called in the lambda above as `org-element-map' doesn't
+          ;; operate in the context of the whole file, that's why we
+          ;; do it here.
+          (let ((org-title (substring-no-properties
+                            (car (plist-get
+                                  (org-export-get-environment)
+                                  :title)))))
+            (list (list file
+                        org-title))))))
     (deft-find-all-files-no-prefix))
    (lambda (x y) (string< (car x)
                           (car y)))))
