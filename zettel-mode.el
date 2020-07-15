@@ -60,8 +60,9 @@
           (when link
             ;; If this file links to the target-file, return its name
             ;; and title.  `org-export-get-environment' cannot be
-            ;; called in the lambda above as it doesn't operate in the
-            ;; context of the whole file, that's why we do it here.
+            ;; called in the lambda above as `org-element-map' doesn't
+            ;; operate in the context of the whole file, that's why we
+            ;; do it here.
             (let ((org-title (substring-no-properties
                               (car (plist-get
                                     (org-export-get-environment)
