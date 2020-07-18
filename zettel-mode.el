@@ -44,6 +44,10 @@
   "Maximum depth of the references lists in the sidebar."
   :type 'integer)
 
+(defcustom zettel-slug-format "%Y%m%d%H%M%S_"
+  "The prefix used for the filenames of created files."
+  :type 'string)
+
 
 (defun zettel--get-backrefs (target-file)
   "Get the links to other deft-managed files referencing TARGET-FILE."
@@ -213,7 +217,7 @@ Used to detect the change of buffer.")
 
 (defun zettel--unique-name (name)
   "Add a unique ID to NAME."
-  (concat (format-time-string "%Y%m%d%H%M%S_")
+  (concat (format-time-string zettel-slug-format)
           name))
 
 (defun zettel-insert-note (text title file-name)
