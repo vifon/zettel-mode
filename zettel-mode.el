@@ -44,6 +44,10 @@
   "Maximum depth of the references lists in the sidebar."
   :type 'integer)
 
+(defcustom zettel-sidebar-update-delay 0.5
+  "The time to wait before updating the sidebar on current buffer change."
+  :type 'float)
+
 (defcustom zettel-slug-format "%Y%m%d%H%M%S_"
   "The prefix used for the filenames of created files."
   :type 'string)
@@ -209,10 +213,14 @@ DEPTH overrides `zettel-sidebar-max-depth' temporarily."
 Used to detect the change of buffer.")
 
 (defun zettel-update-hook ()
-  (unless (and (eq zettel--last-buffer (current-buffer))
-               (get-buffer-window zettel-sidebar-buffer))
-    (zettel-sidebar)
-    (setq zettel--last-buffer (current-buffer))))
+  (let ((current-buffer (current-buffer)))
+    (unless (and (eq zettel--last-buffer current-buffer)
+                 (get-buffer-window zettel-sidebar-buffer))
+      (run-at-time zettel-sidebar-update-delay nil
+                   (lambda ()
+                     (when (eq current-buffer (current-buffer))
+                       (zettel-sidebar)
+                       (setq zettel--last-buffer current-buffer)))))))
 
 
 (defun zettel--unique-name (name)
