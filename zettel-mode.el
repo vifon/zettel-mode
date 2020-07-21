@@ -202,9 +202,12 @@ DEPTH overrides `zettel-sidebar-max-depth' temporarily."
       (let ((inhibit-read-only t))
         (erase-buffer)
         (zettel-sidebar-mode)
-        (zettel--insert-backrefs target-file)
-        (zettel--insert-refs target-file)
-        (zettel--insert-external-refs target-file)
+        (insert
+         (with-temp-buffer
+           (zettel--insert-backrefs target-file)
+           (zettel--insert-refs target-file)
+           (zettel--insert-external-refs target-file)
+           (buffer-string)))
         (goto-char (point-min))))))
 
 (defvar zettel--last-buffer nil
