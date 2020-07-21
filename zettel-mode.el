@@ -45,7 +45,7 @@
   :type 'integer)
 
 (defcustom zettel-sidebar-update-delay 0.5
-  "The time to wait before updating the sidebar on current buffer change."
+  "The time in seconds to wait before updating the sidebar on current buffer change."
   :type 'float)
 
 (defcustom zettel-slug-format "%Y%m%d%H%M%S_"
