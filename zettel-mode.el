@@ -257,7 +257,9 @@ text.  Otherwise interactively ask for a file to link to."
                     (completing-read "File title: "
                                      (deft-find-all-files-no-prefix))))
             (file-name (deft-absolute-filename title))
-            (text (read-from-minibuffer "Description: ")))
+            (text (read-from-minibuffer "Description: "
+                                        (when (file-exists-p file-name)
+                                          (zettel--get-org-title file-name)))))
        (list text title file-name))))
   (let* ((file-name (if (file-exists-p file-name)
                         file-name
