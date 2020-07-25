@@ -254,7 +254,9 @@ Used to detect the change of buffer.")
   (let ((current-buffer (current-buffer)))
     (unless (and (eq zettel--last-buffer current-buffer)
                  (get-buffer-window zettel-sidebar-buffer))
-      (run-at-time zettel-sidebar-update-delay nil
+      (run-at-time (when (get-buffer-window zettel-sidebar-buffer)
+                     zettel-sidebar-update-delay)
+                   nil
                    (lambda ()
                      (when (eq current-buffer (current-buffer))
                        (zettel-sidebar)
