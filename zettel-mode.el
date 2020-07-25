@@ -67,14 +67,10 @@
                                    (org-element-property :path link)))
                           nil t)))
           ;; If this file links to the target-file, return its name
-          ;; and title.  `org-export-get-environment' cannot be
-          ;; called in the lambda above as `org-element-map' doesn't
-          ;; operate in the context of the whole file, that's why we
-          ;; do it here.
-          (let ((org-title (substring-no-properties
-                            (car (plist-get
-                                  (org-export-get-environment)
-                                  :title)))))
+          ;; and title.  `zettel--get-org-title' cannot be called in
+          ;; the lambda above as `org-element-map' doesn't operate in
+          ;; the context of the whole file, that's why we do it here.
+          (let ((org-title (zettel--get-org-title)))
             (list (list file
                         org-title))))))
     (deft-find-all-files-no-prefix))
@@ -87,12 +83,7 @@
     (sort
      (mapcar
       (lambda (file)
-        (list file
-              (with-current-buffer (find-file-noselect file)
-                (substring-no-properties
-                 (car (plist-get
-                       (org-export-get-environment)
-                       :title))))))
+        (list file (zettel--get-org-title file)))
       (cl-intersection
        (deft-find-all-files-no-prefix)
        (delete-dups
@@ -138,6 +129,15 @@ deft-managed files."
       (lambda (a b)
         (string< (plist-get a :text)
                  (plist-get b :text)))))))
+
+(defun zettel--get-org-title (&optional file)
+  (with-current-buffer (if file
+                           (find-file-noselect file)
+                         (current-buffer))
+    (substring-no-properties
+     (car (plist-get
+           (org-export-get-environment)
+           :title)))))
 
 (defun zettel--insert-refs-using (ref-function target-file depth &optional listed)
   "Insert a sidebar section.
