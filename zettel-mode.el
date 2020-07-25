@@ -283,10 +283,12 @@ text.  Otherwise interactively ask for a file to link to."
 (defun zettel-insert-link (&optional arg)
   "Call `zettel-insert-note' if region is active, otherwise call `org-insert-link'.
 
-With a prefix ARG always call `org-insert-link'"
+With a prefix ARG this behavior is inverted."
   (interactive "P")
-  (if (and (region-active-p)
-           (not arg))
+  (if (or (and (region-active-p)
+               (not arg))
+          (and (not (region-active-p))
+               arg))
       (call-interactively #'zettel-insert-note)
     (let ((current-prefix-arg nil))
       (call-interactively #'org-insert-link))))
