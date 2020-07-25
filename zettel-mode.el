@@ -164,14 +164,49 @@ subtree to avoid duplicates and cycles."
                                  (1+ depth)
                                  (cons target-file listed)))))
 
+(defun zettel--get-all (ref-func)
+  "Compute an alist of all files' references using a given REF-FUNC.
+
+REF-FUNC should be a function such as `zettel--get-backrefs' or
+`zettel--get-refs', accepting a target-file as its argument,
+target-file being a member of `deft-find-all-files-no-prefix'."
+  (let ((default-directory deft-directory))
+    (mapcar
+     (lambda (target-file)
+       (cons target-file
+             (funcall ref-func target-file)))
+     (deft-find-all-files-no-prefix))))
+
+(defun zettel--cached (func cache-name)
+  "Either call FUNC or retrieve its result from cache associated with CACHE-NAME.
+
+FUNC should be a function such as `zettel--get-backrefs' or
+`zettel--get-refs', accepting a target-file."
+  (lambda (target-file)
+    (if-let ((cache-file (concat (file-name-as-directory deft-directory)
+                                 ".cache/"
+                                 (symbol-name cache-name)
+                                 ".el"))
+             (backref-cache (with-temp-buffer
+                              (when (file-exists-p cache-file)
+                                (insert-file-contents cache-file)
+                                (goto-char (point-min))
+                                (read (current-buffer)))))
+             (cached (assoc target-file backref-cache)))
+        (cdr cached)
+      (funcall func target-file))))
 
 (defun zettel--insert-backrefs (target-file)
   (insert "* Backrefs\n\n")
-  (zettel--insert-refs-using #'zettel--get-backrefs target-file 0))
+  (zettel--insert-refs-using
+   (zettel--cached #'zettel--get-backrefs 'backrefs)
+   target-file 0))
 
 (defun zettel--insert-refs (target-file)
   (insert "\n* References\n\n")
-  (zettel--insert-refs-using #'zettel--get-refs target-file 0))
+  (zettel--insert-refs-using
+   (zettel--cached #'zettel--get-refs 'refs)
+   target-file 0))
 
 (defun zettel--insert-external-refs (target-file)
   (when-let ((links (zettel--get-external-refs target-file)))

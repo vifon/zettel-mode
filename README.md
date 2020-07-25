@@ -31,6 +31,7 @@ FEATURES
 
 - Quick new note creation: select some text and press <kbd>C-c C-l</kbd>.
 - A sidebar with lists of references to and from the current file.
+- A fully optional reference and backreference cache (rebuilt with `make(1)`).
 
 For the settings see the provided [Customize][4] menus.
 
