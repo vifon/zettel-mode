@@ -131,6 +131,7 @@ deft-managed files."
                  (plist-get b :text)))))))
 
 (defun zettel-get-org-title (&optional file)
+  "Get the `org-mode' title of FILE or the current file if FILE is nil."
   (with-current-buffer (if file
                            (find-file-noselect file)
                          (current-buffer))
