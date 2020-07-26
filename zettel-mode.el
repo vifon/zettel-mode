@@ -53,7 +53,7 @@
   :type 'string)
 
 
-(defun zettel--get-backrefs (target-file)
+(defun zettel-get-backrefs (target-file)
   "Get the links to other deft-managed files referencing TARGET-FILE."
   (sort
    (mapcan
@@ -67,23 +67,23 @@
                                    (org-element-property :path link)))
                           nil t)))
           ;; If this file links to the target-file, return its name
-          ;; and title.  `zettel--get-org-title' cannot be called in
+          ;; and title.  `zettel-get-org-title' cannot be called in
           ;; the lambda above as `org-element-map' doesn't operate in
           ;; the context of the whole file, that's why we do it here.
-          (let ((org-title (zettel--get-org-title)))
+          (let ((org-title (zettel-get-org-title)))
             (list (list file
                         org-title))))))
     (deft-find-all-files-no-prefix))
    (lambda (x y) (string< (car x)
                           (car y)))))
 
-(defun zettel--get-refs (target-file)
+(defun zettel-get-refs (target-file)
   "Get the links to other deft-managed files referenced from TARGET-FILE."
   (with-current-buffer (find-file-noselect target-file)
     (sort
      (mapcar
       (lambda (file)
-        (list file (zettel--get-org-title file)))
+        (list file (zettel-get-org-title file)))
       (cl-intersection
        (deft-find-all-files-no-prefix)
        (delete-dups
@@ -97,7 +97,7 @@
      (lambda (x y) (string< (cadr x)
                             (cadr y))))))
 
-(defun zettel--get-external-refs (target-file)
+(defun zettel-get-external-refs (target-file)
   "Get the external links referenced from TARGET-FILE.
 
 Return all the links other than the ones to the other
@@ -130,7 +130,7 @@ deft-managed files."
         (string< (plist-get a :text)
                  (plist-get b :text)))))))
 
-(defun zettel--get-org-title (&optional file)
+(defun zettel-get-org-title (&optional file)
   (with-current-buffer (if file
                            (find-file-noselect file)
                          (current-buffer))
@@ -139,7 +139,7 @@ deft-managed files."
            (org-export-get-environment)
            :title)))))
 
-(defun zettel--insert-refs-using (ref-function target-file depth &optional listed)
+(defun zettel-insert-refs-using (ref-function target-file depth &optional listed)
   "Insert a sidebar section.
 
 Insert the `org-mode' links found using REF-FUNCTION on
@@ -159,16 +159,16 @@ subtree to avoid duplicates and cycles."
       (org-insert-link nil link title))
     (insert "\n")
     (when (< depth zettel-sidebar-max-depth)
-      (zettel--insert-refs-using ref-function
+      (zettel-insert-refs-using ref-function
                                  (car file-data)
                                  (1+ depth)
                                  (cons target-file listed)))))
 
-(defun zettel--get-all (ref-func)
+(defun zettel-get-all (ref-func)
   "Compute an alist of all files' references using a given REF-FUNC.
 
-REF-FUNC should be a function such as `zettel--get-backrefs' or
-`zettel--get-refs', accepting a target-file as its argument,
+REF-FUNC should be a function such as `zettel-get-backrefs' or
+`zettel-get-refs', accepting a target-file as its argument,
 target-file being a member of `deft-find-all-files-no-prefix'."
   (let ((default-directory deft-directory))
     (mapcar
@@ -177,11 +177,11 @@ target-file being a member of `deft-find-all-files-no-prefix'."
              (funcall ref-func target-file)))
      (deft-find-all-files-no-prefix))))
 
-(defun zettel--cached (func cache-name)
+(defun zettel-cached (func cache-name)
   "Either call FUNC or retrieve its result from cache associated with CACHE-NAME.
 
-FUNC should be a function such as `zettel--get-backrefs' or
-`zettel--get-refs', accepting a target-file."
+FUNC should be a function such as `zettel-get-backrefs' or
+`zettel-get-refs', accepting a target-file."
   (lambda (target-file)
     (if-let ((cache-file (concat (file-name-as-directory deft-directory)
                                  ".cache/"
@@ -196,20 +196,20 @@ FUNC should be a function such as `zettel--get-backrefs' or
         (cdr cached)
       (funcall func target-file))))
 
-(defun zettel--insert-backrefs (target-file)
+(defun zettel-insert-backrefs (target-file)
   (insert "* Backrefs\n\n")
-  (zettel--insert-refs-using
-   (zettel--cached #'zettel--get-backrefs 'backrefs)
+  (zettel-insert-refs-using
+   (zettel-cached #'zettel-get-backrefs 'backrefs)
    target-file 0))
 
-(defun zettel--insert-refs (target-file)
+(defun zettel-insert-refs (target-file)
   (insert "\n* References\n\n")
-  (zettel--insert-refs-using
-   (zettel--cached #'zettel--get-refs 'refs)
+  (zettel-insert-refs-using
+   (zettel-cached #'zettel-get-refs 'refs)
    target-file 0))
 
-(defun zettel--insert-external-refs (target-file)
-  (when-let ((links (zettel--get-external-refs target-file)))
+(defun zettel-insert-external-refs (target-file)
+  (when-let ((links (zettel-get-external-refs target-file)))
     (insert "\n* External\n\n")
     (dolist (link links)
       (insert "- ")
@@ -239,9 +239,9 @@ DEPTH overrides `zettel-sidebar-max-depth' temporarily."
         (zettel-sidebar-mode)
         (insert
          (with-temp-buffer
-           (zettel--insert-backrefs target-file)
-           (zettel--insert-refs target-file)
-           (zettel--insert-external-refs target-file)
+           (zettel-insert-backrefs target-file)
+           (zettel-insert-refs target-file)
+           (zettel-insert-external-refs target-file)
            (buffer-string)))
         (goto-char (point-min))))))
 
@@ -263,7 +263,7 @@ Used to detect the change of buffer.")
                        (setq zettel--last-buffer current-buffer)))))))
 
 
-(defun zettel--unique-name (name)
+(defun zettel-unique-name (name)
   "Add a unique ID to NAME."
   (concat (format-time-string zettel-slug-format)
           name))
@@ -296,12 +296,12 @@ text.  Otherwise interactively ask for a file to link to."
             (file-name (deft-absolute-filename title))
             (text (read-from-minibuffer "Description: "
                                         (when (file-exists-p file-name)
-                                          (zettel--get-org-title file-name)))))
+                                          (zettel-get-org-title file-name)))))
        (list text title file-name))))
   (let* ((file-name (if (file-exists-p file-name)
                         file-name
                       (deft-absolute-filename
-                        (zettel--unique-name
+                        (zettel-unique-name
                          (file-name-nondirectory
                           (file-name-sans-extension
                            file-name))))))
