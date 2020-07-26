@@ -179,7 +179,7 @@ target-file being a member of `deft-find-all-files-no-prefix'."
      (deft-find-all-files-no-prefix))))
 
 (defun zettel-cached (func cache-name)
-  "Either call FUNC or retrieve its result from cache associated with CACHE-NAME.
+  "Either call FUNC or retrieve its result from cache associated with the CACHE-NAME symbol.
 
 FUNC should be a function such as `zettel-get-backrefs' or
 `zettel-get-refs', accepting a target-file."
