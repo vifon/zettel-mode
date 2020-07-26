@@ -135,10 +135,10 @@ deft-managed files."
   (with-current-buffer (if file
                            (find-file-noselect file)
                          (current-buffer))
-    (substring-no-properties
-     (car (plist-get
-           (org-export-get-environment)
-           :title)))))
+    (when-let ((title-prop (plist-get
+                            (org-export-get-environment)
+                            :title)))
+      (substring-no-properties (car title-prop)))))
 
 (defun zettel-insert-refs-using (ref-function target-file depth &optional listed)
   "Insert a sidebar section.
