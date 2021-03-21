@@ -53,8 +53,11 @@
   :type 'string)
 
 
+(defun zettel-get-files ()
+  (directory-files default-directory nil "\\.org\\'"))
+
 (defun zettel-get-backrefs (target-file)
-  "Get the links to other deft-managed files referencing TARGET-FILE."
+  "Get the links to other files referencing TARGET-FILE."
   (sort
    (mapcan
     (lambda (file)
@@ -73,19 +76,19 @@
           (let ((org-title (zettel-get-org-title)))
             (list (list file
                         org-title))))))
-    (deft-find-all-files-no-prefix))
+    (zettel-get-files))
    (lambda (x y) (string< (car x)
                           (car y)))))
 
 (defun zettel-get-refs (target-file)
-  "Get the links to other deft-managed files referenced from TARGET-FILE."
+  "Get the links to other files referenced from TARGET-FILE."
   (with-current-buffer (find-file-noselect target-file)
     (sort
      (mapcar
       (lambda (file)
         (list file (zettel-get-org-title file)))
       (cl-intersection
-       (deft-find-all-files-no-prefix)
+       (zettel-get-files)
        (delete-dups
         (org-element-map (org-element-parse-buffer) 'link
           (lambda (link)
@@ -100,8 +103,7 @@
 (defun zettel-get-external-refs (target-file)
   "Get the external links referenced from TARGET-FILE.
 
-Return all the links other than the ones to the other
-deft-managed files."
+Return all the links other than the ones to the other files."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
      (lambda (link)
@@ -123,7 +125,7 @@ deft-managed files."
                             raw)
                     :path (when (equal type "file")
                             path))))))
-       (deft-find-all-files-no-prefix)
+       (zettel-get-files)
        :test (lambda (a b) (equal (plist-get a :path)
                                   b)))
       (lambda (a b)
@@ -170,13 +172,13 @@ subtree to avoid duplicates and cycles."
 
 REF-FUNC should be a function such as `zettel-get-backrefs' or
 `zettel-get-refs', accepting a target-file as its argument,
-target-file being a member of `deft-find-all-files-no-prefix'."
+target-file being a member of `zettel-get-files'."
   (let ((default-directory deft-directory))
     (mapcar
      (lambda (target-file)
        (cons target-file
              (funcall ref-func target-file)))
-     (deft-find-all-files-no-prefix))))
+     (zettel-get-files))))
 
 (defun zettel-cached (func cache-name)
   "Either call FUNC or retrieve its result from cache associated with the CACHE-NAME symbol.
@@ -286,14 +288,14 @@ text.  Otherwise interactively ask for a file to link to."
                      (point) (mark)))
               (title (file-name-sans-extension
                       (completing-read "File title: "
-                                       (deft-find-all-files-no-prefix)
+                                       (zettel-get-files)
                                        nil nil
                                        text)))
               (file-name (deft-absolute-filename title)))
          (list text title file-name))
      (let* ((title (file-name-sans-extension
                     (completing-read "File title: "
-                                     (deft-find-all-files-no-prefix))))
+                                     (zettel-get-files))))
             (file-name (deft-absolute-filename title))
             (text (read-from-minibuffer "Description: "
                                         (when (file-exists-p file-name)
