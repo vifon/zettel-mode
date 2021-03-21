@@ -237,10 +237,12 @@ DEPTH overrides `zettel-sidebar-max-depth' temporarily."
   (let* ((zettel-sidebar-max-depth (or depth
                                        zettel-sidebar-max-depth))
          (target-file (file-name-nondirectory (buffer-file-name)))
+         (zettel-directory default-directory)
          (buffer (get-buffer-create zettel-sidebar-buffer)))
     (display-buffer-in-side-window buffer
                                    '((side . right)))
     (with-current-buffer buffer
+      (setq default-directory zettel-directory)
       (read-only-mode 1)
       (let ((inhibit-read-only t))
         (erase-buffer)
