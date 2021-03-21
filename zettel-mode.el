@@ -56,6 +56,12 @@
 (defun zettel-get-files ()
   (directory-files default-directory nil "\\.org\\'"))
 
+(defun zettel-absolute-filename (name)
+  (concat (file-name-as-directory default-directory)
+          (downcase
+           (replace-regexp-in-string "[[:space:]/]+" "-" name))
+          ".org"))
+
 (defun zettel-get-backrefs (target-file)
   "Get the links to other files referencing TARGET-FILE."
   (sort
@@ -173,12 +179,11 @@ subtree to avoid duplicates and cycles."
 REF-FUNC should be a function such as `zettel-get-backrefs' or
 `zettel-get-refs', accepting a target-file as its argument,
 target-file being a member of `zettel-get-files'."
-  (let ((default-directory deft-directory))
-    (mapcar
-     (lambda (target-file)
-       (cons target-file
-             (funcall ref-func target-file)))
-     (zettel-get-files))))
+  (mapcar
+   (lambda (target-file)
+     (cons target-file
+           (funcall ref-func target-file)))
+   (zettel-get-files)))
 
 (defun zettel-cached (func cache-name)
   "Either call FUNC or retrieve its result from cache associated with the CACHE-NAME symbol.
@@ -186,7 +191,7 @@ target-file being a member of `zettel-get-files'."
 FUNC should be a function such as `zettel-get-backrefs' or
 `zettel-get-refs', accepting a target-file."
   (lambda (target-file)
-    (if-let ((cache-file (concat (file-name-as-directory deft-directory)
+    (if-let ((cache-file (concat (file-name-as-directory default-directory)
                                  ".cache/"
                                  (symbol-name cache-name)
                                  ".el"))
@@ -291,19 +296,19 @@ text.  Otherwise interactively ask for a file to link to."
                                        (zettel-get-files)
                                        nil nil
                                        text)))
-              (file-name (deft-absolute-filename title)))
+              (file-name (zettel-absolute-filename title)))
          (list text title file-name))
      (let* ((title (file-name-sans-extension
                     (completing-read "File title: "
                                      (zettel-get-files))))
-            (file-name (deft-absolute-filename title))
+            (file-name (zettel-absolute-filename title))
             (text (read-from-minibuffer "Description: "
                                         (when (file-exists-p file-name)
                                           (zettel-get-org-title file-name)))))
        (list text title file-name))))
   (let* ((file-name (if (file-exists-p file-name)
                         file-name
-                      (deft-absolute-filename
+                      (zettel-absolute-filename
                         (zettel-unique-name
                          (file-name-nondirectory
                           (file-name-sans-extension
