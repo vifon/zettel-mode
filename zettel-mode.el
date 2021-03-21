@@ -349,7 +349,7 @@ Provides a quicker to use version of `org-insert-link' and
 a sidebar outlining the file's relationship with other files."
   (add-hook 'post-command-hook #'zettel-update-hook nil t))
 
-(add-to-list 'auto-mode-alist '("/\\.deft/.*\\.org\\'" . zettel-mode))
+(add-to-list 'auto-mode-alist '("/\\.deft/[^/]+\\.org\\'" . zettel-mode))
 
 
 (defvar zettel-sidebar-mode-map
