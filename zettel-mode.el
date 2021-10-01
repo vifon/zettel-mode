@@ -53,8 +53,17 @@
   :type 'string)
 
 
+(defun zettel-get-files ()
+  (directory-files default-directory nil "\\.org\\'"))
+
+(defun zettel-absolute-filename (name)
+  (concat (file-name-as-directory default-directory)
+          (downcase
+           (replace-regexp-in-string "[[:space:]/]+" "-" name))
+          ".org"))
+
 (defun zettel-get-backrefs (target-file)
-  "Get the links to other deft-managed files referencing TARGET-FILE."
+  "Get the links to other files referencing TARGET-FILE."
   (sort
    (mapcan
     (lambda (file)
@@ -73,19 +82,19 @@
           (let ((org-title (zettel-get-org-title)))
             (list (list file
                         org-title))))))
-    (deft-find-all-files-no-prefix))
+    (zettel-get-files))
    (lambda (x y) (string< (car x)
                           (car y)))))
 
 (defun zettel-get-refs (target-file)
-  "Get the links to other deft-managed files referenced from TARGET-FILE."
+  "Get the links to other files referenced from TARGET-FILE."
   (with-current-buffer (find-file-noselect target-file)
     (sort
      (mapcar
       (lambda (file)
         (list file (zettel-get-org-title file)))
       (cl-intersection
-       (deft-find-all-files-no-prefix)
+       (zettel-get-files)
        (delete-dups
         (org-element-map (org-element-parse-buffer) 'link
           (lambda (link)
@@ -100,8 +109,7 @@
 (defun zettel-get-external-refs (target-file)
   "Get the external links referenced from TARGET-FILE.
 
-Return all the links other than the ones to the other
-deft-managed files."
+Return all the links other than the ones to the other files."
   (with-current-buffer (find-file-noselect target-file)
     (mapcar
      (lambda (link)
@@ -123,7 +131,7 @@ deft-managed files."
                             raw)
                     :path (when (equal type "file")
                             path))))))
-       (deft-find-all-files-no-prefix)
+       (zettel-get-files)
        :test (lambda (a b) (equal (plist-get a :path)
                                   b)))
       (lambda (a b)
@@ -170,13 +178,12 @@ subtree to avoid duplicates and cycles."
 
 REF-FUNC should be a function such as `zettel-get-backrefs' or
 `zettel-get-refs', accepting a target-file as its argument,
-target-file being a member of `deft-find-all-files-no-prefix'."
-  (let ((default-directory deft-directory))
-    (mapcar
-     (lambda (target-file)
-       (cons target-file
-             (funcall ref-func target-file)))
-     (deft-find-all-files-no-prefix))))
+target-file being a member of `zettel-get-files'."
+  (mapcar
+   (lambda (target-file)
+     (cons target-file
+           (funcall ref-func target-file)))
+   (zettel-get-files)))
 
 (defun zettel-cached (func cache-name)
   "Either call FUNC or retrieve its result from cache associated with the CACHE-NAME symbol.
@@ -184,7 +191,7 @@ target-file being a member of `deft-find-all-files-no-prefix'."
 FUNC should be a function such as `zettel-get-backrefs' or
 `zettel-get-refs', accepting a target-file."
   (lambda (target-file)
-    (if-let ((cache-file (concat (file-name-as-directory deft-directory)
+    (if-let ((cache-file (concat (file-name-as-directory default-directory)
                                  ".cache/"
                                  (symbol-name cache-name)
                                  ".el"))
@@ -230,10 +237,12 @@ DEPTH overrides `zettel-sidebar-max-depth' temporarily."
   (let* ((zettel-sidebar-max-depth (or depth
                                        zettel-sidebar-max-depth))
          (target-file (file-name-nondirectory (buffer-file-name)))
+         (zettel-directory default-directory)
          (buffer (get-buffer-create zettel-sidebar-buffer)))
     (display-buffer-in-side-window buffer
                                    '((side . right)))
     (with-current-buffer buffer
+      (setq default-directory zettel-directory)
       (read-only-mode 1)
       (let ((inhibit-read-only t))
         (erase-buffer)
@@ -286,22 +295,22 @@ text.  Otherwise interactively ask for a file to link to."
                      (point) (mark)))
               (title (file-name-sans-extension
                       (completing-read "File title: "
-                                       (deft-find-all-files-no-prefix)
+                                       (zettel-get-files)
                                        nil nil
                                        text)))
-              (file-name (deft-absolute-filename title)))
+              (file-name (zettel-absolute-filename title)))
          (list text title file-name))
      (let* ((title (file-name-sans-extension
                     (completing-read "File title: "
-                                     (deft-find-all-files-no-prefix))))
-            (file-name (deft-absolute-filename title))
+                                     (zettel-get-files))))
+            (file-name (zettel-absolute-filename title))
             (text (read-from-minibuffer "Description: "
                                         (when (file-exists-p file-name)
                                           (zettel-get-org-title file-name)))))
        (list text title file-name))))
   (let* ((file-name (if (file-exists-p file-name)
                         file-name
-                      (deft-absolute-filename
+                      (zettel-absolute-filename
                         (zettel-unique-name
                          (file-name-nondirectory
                           (file-name-sans-extension
@@ -349,7 +358,8 @@ Provides a quicker to use version of `org-insert-link' and
 a sidebar outlining the file's relationship with other files."
   (add-hook 'post-command-hook #'zettel-update-hook nil t))
 
-(add-to-list 'auto-mode-alist '("/\\.deft/[^/]+\\.org\\'" . zettel-mode))
+(unless (bound-and-true-p zettel-mode-no-deft)
+  (add-to-list 'auto-mode-alist '("/\\.deft/[^/]+\\.org\\'" . zettel-mode)))
 
 
 (defvar zettel-sidebar-mode-map

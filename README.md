@@ -10,21 +10,27 @@ modes).
 ASSUMPTIONS
 -----------
 
-Uses [Deft][3] as its "entry point" and was developed under an
-assumption the `Deft` files reside in `~/.deft/`.  It should work with
-any `deft-directory` with the final directory named `.deft` but it
-wasn't tested.  In other cases, you'll need to customize
-`auto-mode-alist` accordingly.  Using subdirectories wasn't tested.
+Traditionally uses [Deft][3] as its "entry point" and was initially
+developed under an assumption the `Deft` files reside in `~/.deft/`.
+It should work with any `deft-directory` but you'll need to customize
+`auto-mode-alist` accordingly.  Using subdirectories isn't supported.
+
+It's possible to have secondary Zettelkastens outside of `~/.deft/`,
+or ignore Deft whatsoever by handling `auto-mode-alist` manually, for example:
+
+```elisp
+;;; Any .org file inside a zettel/ or zettels/ directory.
+(add-to-list 'auto-mode-alist '("/zettels?/[^/]+\\.org\\'" . zettel-mode))
+
+(add-to-list 'auto-mode-alist '("/home/USER/my-zettelkasten/[^/]+\\.org\\'" . zettel-mode))
+```
+
+To prevent `zettel-mode` from associating with the Deft files, eval
+`(setq zettel-mode-no-deft t)` before loading `zettel-mode`.
 
 [1]: https://zettelkasten.de/
 [2]: https://github.com/org-roam/org-roam
 [3]: https://github.com/jrblevin/deft
-
-Recommended `Deft` settings:
-
-```elisp
-(setq deft-default-extension "org")
-```
 
 FEATURES
 --------
