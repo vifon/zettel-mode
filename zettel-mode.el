@@ -4,7 +4,7 @@
 
 ;; Author: Wojciech Siewierski
 ;; Keywords: outlines, org-mode, convenience
-;; Version: 0.9
+;; Version: 1.0
 ;; Package-Requires: ((emacs "26.1") (org "9.3") (deft "0.8"))
 
 ;; This program is free software; you can redistribute it and/or modify
