@@ -1,6 +1,10 @@
 zettel-mode [name subject to change]
 ====================================
 
+Note: Mostly superseded by
+[zettel2](https://github.com/vifon/zettel2).  Left as a separate
+project because the featureset is very different.
+
 An opinionated Emacs mode for [Zettelkasten][1]-style note-taking.
 Heavily inspired by [org-roam][2], striving to be simpler, less
 dependent on the external state (like the auxiliary database of
